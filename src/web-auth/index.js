@@ -66,6 +66,11 @@ function WebAuth(options) {
         optional: true,
         type: 'number',
         message: '_timesToRetryFailedRequests option is not valid'
+      },
+      _unsafeUseHttp: {
+        optional: 'true',
+        type: 'boolean',
+        message: '_unsafeUseHttp option is not valid'
       }
     }
   );
@@ -101,9 +106,14 @@ function WebAuth(options) {
     (this.baseOptions.overrides && this.baseOptions.overrides.__tenant) ||
     this.baseOptions.domain.split('.')[0];
 
-  this.baseOptions.token_issuer =
-    (this.baseOptions.overrides && this.baseOptions.overrides.__token_issuer) ||
-    'https://' + this.baseOptions.domain + '/';
+  if (this.baseOptions.overrides && this.baseOptions.overrides.__token_issuer) {
+    this.baseOptions.token_issuer = this.baseOptions.overrides.__token_issuer;
+  } else {
+    this.baseOptions.token_issuer =
+      this.baseOptions._unsafeUseHttp === true
+        ? 'http://' + this.baseOptions.domain + '/'
+        : 'https://' + this.baseOptions.domain + '/';
+  }
 
   this.baseOptions.jwksURI = this.baseOptions.overrides && this.baseOptions.overrides.__jwks_uri;
 
